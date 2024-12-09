@@ -1,5 +1,6 @@
 package com.example.skinsure.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,13 +34,21 @@ import com.example.skinsure.viewModel.IngredientViewModel
 import com.example.skinsure.viewModel.IngredientsDetailViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.skinsure.viewModel.LogInViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IngredientScanScreen(viewModel: IngredientViewModel = viewModel(), ingredientsDetailViewModel: IngredientsDetailViewModel = viewModel(), navController: NavHostController) {
+fun IngredientScanScreen(logInViewModel: LogInViewModel = viewModel(), viewModel: IngredientViewModel = viewModel(), ingredientsDetailViewModel: IngredientsDetailViewModel = viewModel(), navController: NavHostController) {
     var query by remember { mutableStateOf(TextFieldValue("")) }
     val searchResults by viewModel.searchResults.collectAsState()
 
+
+    BackHandler {
+    }
+
+    LaunchedEffect(Unit){
+
+    }
 
     Box(
         Modifier
@@ -117,25 +126,14 @@ fun IngredientScanScreen(viewModel: IngredientViewModel = viewModel(), ingredien
                 Box(
                     Modifier
                         .size(70.dp)
-                        .background(color = Color.White, shape = RoundedCornerShape(35.dp)), contentAlignment = Alignment.Center) {
+                        .background(color = Color.White, shape = RoundedCornerShape(35.dp))
+                        .clickable {
+                            navController.navigate("profile")
+                        }, contentAlignment = Alignment.Center) {
                     Icon(imageVector = Icons.Filled.Menu, contentDescription = "", modifier = Modifier.size(35.dp))
                 }
             }
         }
-    }
-}
-
-@Composable
-fun IngredientCard(ingredient: Map<String, String>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Text(text = "Bahan: ${ingredient["IngredientName"]}", color = Color.Black)
-        Text(text = "Fungsi: ${ingredient["Function"]}")
-        Text(text = "Deskripsi: ${ingredient["Description"]}")
-        Text(text = "Level Risiko: ${ingredient["RiskLevel"]}")
     }
 }
 

@@ -107,79 +107,49 @@ fun DetailIngredients(ingredientsDetailViewModel: IngredientsDetailViewModel = v
                         Column(Modifier.padding(horizontal = 20.dp, vertical = 30.dp)) {
                             Text(
                                 text = "FUNCTIONS",
-                                color = Color.Gray,
+                                color = Color.Black,
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(5.dp))
                             Text(
                                 text = data.Function,
                                 color = Color.Black,
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Normal
                             )
                             Spacer(modifier = Modifier.height(15.dp))
                             Text(
                                 text = "DESCRIPTIONS",
-                                color = Color.Gray,
+                                color = Color.Black,
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(5.dp))
                             Text(
                                 text = data.Description,
                                 color = Color.Black,
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Normal
                             )
                             Spacer(modifier = Modifier.height(15.dp))
                             Text(
                                 text = "RISK LEVEL",
-                                color = Color.Gray,
+                                color = Color.Black,
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(5.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    Modifier
-                                        .size(13.dp)
-                                        .background(
-                                            color = Color.Gray,
-                                            shape = RoundedCornerShape(
-                                                15.dp
-                                            )
-                                        )
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Box(
-                                    Modifier
-                                        .size(13.dp)
-                                        .background(
-                                            color = Color.Gray,
-                                            shape = RoundedCornerShape(
-                                                15.dp
-                                            )
-                                        )
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Box(
-                                    Modifier
-                                        .size(13.dp)
-                                        .background(
-                                            color = Color.Gray,
-                                            shape = RoundedCornerShape(
-                                                15.dp
-                                            )
-                                        )
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    text = data.RiskLevel,
-                                    fontSize = 16.sp,
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold
-                                )
+                            if(data.RiskLevel.equals("Low", ignoreCase = true)){
+                                low(risk = data.RiskLevel)
+                            } else if (data.RiskLevel.equals("low to moderate", ignoreCase = true)){
+                                lowToModerate(risk = data.RiskLevel)
+                            } else if (data.RiskLevel.equals("moderate", ignoreCase = true)){
+                                moderate(risk = data.RiskLevel)
+                            } else if (data.RiskLevel.equals("moderate to high", ignoreCase = true)){
+                                moderateToHigh(risk = data.RiskLevel)
+                            } else if (data.RiskLevel.equals("high", ignoreCase = true)){
+                                high(risk = data.RiskLevel)
                             }
                         }
                     }

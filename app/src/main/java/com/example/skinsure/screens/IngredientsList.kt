@@ -1,6 +1,7 @@
 package com.example.skinsure.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,6 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,6 +62,7 @@ fun IngredientList(navController: NavHostController, ingredientViewModel: Ingred
         var isSaveBoxOpen by remember {
                 mutableStateOf(false)
         }
+        val image by ingredientViewModel.imageBitmap.collectAsState()
 
         BackHandler {
                 ingredientViewModel.setIngredientDetailsBackToEmpty()
@@ -87,9 +91,28 @@ fun IngredientList(navController: NavHostController, ingredientViewModel: Ingred
                                                 color = Color(0XFFfe96c7),
                                                 shape = RoundedCornerShape(20.dp)
                                         )
-                                        .clickable { if (isSaveBoxOpen) isSaveBoxOpen = false else isSaveBoxOpen = true }, contentAlignment = Alignment.Center) {
+                                        .clickable {
+                                                if (isSaveBoxOpen) isSaveBoxOpen =
+                                                        false else isSaveBoxOpen = true
+                                        }, contentAlignment = Alignment.Center) {
                                 Text(text = if(isSaveBoxOpen) "Close" else  "Save Result?", color = Color(0XFFfe96c7), fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 13.dp, vertical = 8.dp))
                         }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(modifier = Modifier
+                                        .size(300.dp)){
+                                        image?.let { bitmap ->
+                                                Image(
+                                                        bitmap = bitmap.asImageBitmap(),
+                                                        contentDescription = null,
+                                                        modifier = Modifier
+                                                                .fillMaxSize(),
+                                                        contentScale = ContentScale.Fit
+                                                )
+                                        }
+                                }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
                         Box(modifier = Modifier.fillMaxSize()){
                               LazyColumn(contentPadding = PaddingValues(top = 10.dp)){
                                       items(data) { item ->
@@ -107,7 +130,10 @@ fun IngredientList(navController: NavHostController, ingredientViewModel: Ingred
                                 Box(
                                         Modifier
                                                 .width(300.dp)
-                                                .shadow(elevation = 7.dp, shape = RoundedCornerShape(20.dp))
+                                                .shadow(
+                                                        elevation = 7.dp,
+                                                        shape = RoundedCornerShape(20.dp)
+                                                )
                                                 .background(
                                                         color = Color(0XFFF5EFEF),
                                                         shape = RoundedCornerShape(20.dp)
@@ -123,12 +149,16 @@ fun IngredientList(navController: NavHostController, ingredientViewModel: Ingred
                                                                 .height(60.dp)
                                                                 .background(
                                                                         color = Color.Transparent,
-                                                                        shape = RoundedCornerShape(10.dp)
+                                                                        shape = RoundedCornerShape(
+                                                                                10.dp
+                                                                        )
                                                                 )
                                                                 .border(
                                                                         width = 2.dp,
                                                                         color = Color(0XFFfe96c7),
-                                                                        shape = RoundedCornerShape(10.dp)
+                                                                        shape = RoundedCornerShape(
+                                                                                10.dp
+                                                                        )
                                                                 ), contentAlignment = Alignment.Center) {
                                                         TextField(value = productName, onValueChange = { productName = it },
                                                                 modifier = Modifier
@@ -144,11 +174,16 @@ fun IngredientList(navController: NavHostController, ingredientViewModel: Ingred
                                                         Modifier
                                                                 .shadow(
                                                                         elevation = 5.dp,
-                                                                        shape = RoundedCornerShape(20.dp)
-                                                                ).clickable {  }
+                                                                        shape = RoundedCornerShape(
+                                                                                20.dp
+                                                                        )
+                                                                )
+                                                                .clickable { }
                                                                 .background(
                                                                         color = Color.White,
-                                                                        shape = RoundedCornerShape(20.dp)
+                                                                        shape = RoundedCornerShape(
+                                                                                20.dp
+                                                                        )
                                                                 ), contentAlignment = Alignment.Center) {
                                                         Text(text = "save", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 13.dp, vertical = 8.dp))
                                                 }
@@ -185,38 +220,16 @@ fun IngredientListBox(name: String, risk: String, onBoxClicked: ()-> Unit){
                         Column() {
                                 Text(text = name, color = Color.Black, fontWeight = FontWeight.Medium, fontSize = 16.sp)
                                 Spacer(modifier = Modifier.height(5.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                                Modifier
-                                                        .size(13.dp)
-                                                        .background(
-                                                                color = Color.Gray,
-                                                                shape = RoundedCornerShape(
-                                                                        15.dp
-                                                                )
-                                                        ))
-                                        Spacer(modifier = Modifier.width(5.dp))
-                                        Box(
-                                                Modifier
-                                                        .size(13.dp)
-                                                        .background(
-                                                                color = Color.Gray,
-                                                                shape = RoundedCornerShape(
-                                                                        15.dp
-                                                                )
-                                                        ))
-                                        Spacer(modifier = Modifier.width(5.dp))
-                                        Box(
-                                                Modifier
-                                                        .size(13.dp)
-                                                        .background(
-                                                                color = Color.Gray,
-                                                                shape = RoundedCornerShape(
-                                                                        15.dp
-                                                                )
-                                                        ))
-                                        Spacer(modifier = Modifier.width(5.dp))
-                                        Text(text = risk)
+                                if(risk.equals("Low", ignoreCase = true)){
+                                        low(risk = risk)
+                                } else if (risk.equals("low to moderate", ignoreCase = true)){
+                                        lowToModerate(risk = risk)
+                                } else if (risk.equals("moderate", ignoreCase = true)){
+                                        moderate(risk = risk)
+                                } else if (risk.equals("moderate to high", ignoreCase = true)){
+                                        moderateToHigh(risk = risk)
+                                } else if (risk.equals("high", ignoreCase = true)){
+                                        high(risk = risk)
                                 }
                         }
                         Icon(
@@ -228,3 +241,190 @@ fun IngredientListBox(name: String, risk: String, onBoxClicked: ()-> Unit){
                 }
         }
 }
+
+@Composable
+fun low(risk: String){
+        Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFFbd996e),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = risk)
+        }
+}
+
+@Composable
+fun lowToModerate(risk: String){
+        Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFFbd6e6e),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFFbd6e6e),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = risk)
+        }
+}
+
+@Composable
+fun moderate(risk: String){
+        Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFF854b4b),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFF854b4b),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFF854b4b),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = risk)
+        }
+}
+
+@Composable
+fun moderateToHigh(risk: String){
+        Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFF713737),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFF713737),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFF713737),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0XFF713737),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = risk)
+        }
+}
+
+@Composable
+fun high(risk: String){
+        Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0xFFC8463C),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0xFFC8463C),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0xFFC8463C),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0xFFC8463C),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Box(
+                        Modifier
+                                .size(13.dp)
+                                .background(
+                                        color = Color(0xFFC8463C),
+                                        shape = RoundedCornerShape(
+                                                15.dp
+                                        )
+                                ))
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = risk)
+        }
+}
+
+//0xFFC8463C
