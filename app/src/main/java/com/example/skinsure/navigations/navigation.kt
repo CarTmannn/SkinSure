@@ -10,8 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.skinsure.factory.LogInViewModelFactory
+import com.example.skinsure.screens.DetailHistory
 import com.example.skinsure.screens.DetailIngredients
-import com.example.skinsure.screens.HistoryDetail
 import com.example.skinsure.screens.IngredientList
 import com.example.skinsure.screens.IngredientScanScreen
 import com.example.skinsure.screens.Intro
@@ -38,10 +38,10 @@ fun navigation(){
         composable("home") { IngredientScanScreen(viewModel = IngredientViewModel, ingredientsDetailViewModel = IngredientsDetailViewModel, navController = navController, logInViewModel = logInViewModel) }
         composable("detailIngredient") { DetailIngredients(ingredientsDetailViewModel = IngredientsDetailViewModel) }
         composable("scan") { Scan(navController = navController, ingredientViewModel = IngredientViewModel) }
-        composable("list") { IngredientList(navController = navController, ingredientViewModel = IngredientViewModel, ingredientsDetailViewModel = IngredientsDetailViewModel) }
+        composable("list") { IngredientList(navController = navController, logInViewModel = logInViewModel, ingredientViewModel = IngredientViewModel, ingredientsDetailViewModel = IngredientsDetailViewModel) }
         composable("intro") { Intro(navHostController = navController, signUpViewModel = signUpViewModel, logInViewModel = logInViewModel) }
         composable("signUp") { SignUp(navHostController = navController, signUpViewModel = signUpViewModel) }
-        composable("profile") { Profile(logInViewModel = logInViewModel) }
-        composable("historyDetail") { HistoryDetail() }
+        composable("profile") { Profile(logInViewModel = logInViewModel, navController = navController, ingredientViewModel = IngredientViewModel) }
+        composable("detailHistory") { DetailHistory(ingredientsDetailViewModel = IngredientsDetailViewModel, ingredientViewModel = IngredientViewModel, navtController = navController) }
     }
 }

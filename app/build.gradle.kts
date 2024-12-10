@@ -69,6 +69,8 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.34.0") // Example version
     implementation("com.cloudinary:kotlin-url-gen:1.7.0")
     implementation("androidx.compose.material:material-icons-extended:1.3.1")
+    implementation("com.google.firebase:firebase-storage:20.2.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5") // Example version
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.2") // Example version

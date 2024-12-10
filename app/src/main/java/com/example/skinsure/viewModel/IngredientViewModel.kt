@@ -1,13 +1,17 @@
 package com.example.skinsure.viewModel
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.skinsure.model.IngredientsModel
+import com.example.skinsure.model.historyModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -15,6 +19,9 @@ import kotlinx.coroutines.withContext
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class IngredientViewModel : ViewModel() {
 
@@ -36,9 +43,19 @@ class IngredientViewModel : ViewModel() {
     private val _imageBitmap = MutableStateFlow<Bitmap?>(null)
     val imageBitmap: StateFlow<Bitmap?> get() = _imageBitmap
 
+    var _historyData = MutableStateFlow<List<historyModel>>(emptyList())
+    val historyData: MutableStateFlow<List<historyModel>> get() = _historyData
+
+    var _historyDetails = MutableStateFlow<historyModel?>(null)
+    val historyDetails: MutableStateFlow<historyModel?> get() = _historyDetails
+
+    val storage = FirebaseStorage.getInstance().reference
+
     private val db = FirebaseFirestore.getInstance()
 
-    fun setImage(image: Bitmap){
+    val tempName = mutableStateOf("")
+
+    fun setImage(image: Bitmap) {
         _imageBitmap.value = image
     }
 
@@ -46,15 +63,16 @@ class IngredientViewModel : ViewModel() {
         _extractionStatus.value = status
     }
 
-    fun setIngredientDetailsBackToEmpty(){
+    fun setIngredientDetailsBackToEmpty() {
         _ingredientDetails.value = emptyList()
     }
 
-     fun extractTextFromImage(bitmap: Bitmap) {
+    fun extractTextFromImage(bitmap: Bitmap) {
         setExtractionStatus("Proses Ekstraksi...")
         _isLoading.value = true
         val textRecognizer = com.google.mlkit.vision.text.TextRecognition.getClient(
-            TextRecognizerOptions.DEFAULT_OPTIONS)
+            TextRecognizerOptions.DEFAULT_OPTIONS
+        )
         val inputImage = com.google.mlkit.vision.common.InputImage.fromBitmap(bitmap, 0)
 
         textRecognizer.process(inputImage)
@@ -88,14 +106,20 @@ class IngredientViewModel : ViewModel() {
         val formattedText = ingredientsText.replace("\n", " ").trim()
 
         // Improved regex to capture both uppercase and lowercase words, and ingredients with slashes
-        val regex = Regex("""([A-Za-z0-9/-]+(?:\s[A-Za-z0-9/-]+)*(?:\s\([\w\s]+\))?(?:\s[A-Za-z0-9/-]+)*)""")
+        val regex =
+            Regex("""([A-Za-z0-9/-]+(?:\s[A-Za-z0-9/-]+)*(?:\s\([\w\s]+\))?(?:\s[A-Za-z0-9/-]+)*)""")
 
 
         Log.d("RawTextBeforeCleaning", "Raw Text: ${ingredientsText}")
         val ingredients = regex.findAll(formattedText)
             .map { it.value.trim() } // Remove leading and trailing spaces
             .filter { it.isNotEmpty() } // Filter out empty strings
-            .filterNot { it.contains("Ingredients:", ignoreCase = true) } // Remove the "Ingredients:" label
+            .filterNot {
+                it.contains(
+                    "Ingredients:",
+                    ignoreCase = true
+                )
+            } // Remove the "Ingredients:" label
             .distinct() // Remove duplicates
             .toList()
 
@@ -150,8 +174,8 @@ class IngredientViewModel : ViewModel() {
                         .whereLessThanOrEqualTo("IngredientName", query + "\uf8ff")
                         .get()
                         .await()
-                        .documents.mapNotNull {
-                                documents -> documents.toObject(IngredientsModel::class.java)
+                        .documents.mapNotNull { documents ->
+                            documents.toObject(IngredientsModel::class.java)
                         }
                 } catch (e: Exception) {
                     emptyList()
@@ -162,4 +186,78 @@ class IngredientViewModel : ViewModel() {
             }
         }
     }
+
+    fun saveBitmapToFile(context: Context, bitmap: Bitmap): Uri? {
+        // Buat file sementara di penyimpanan internal
+        val file = File(context.cacheDir, "temp_image.png")
+        return try {
+            // Simpan bitmap ke file
+            val outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+
+            // Dapatkan Uri dari file
+            Uri.fromFile(file)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun saveResult(uri: Uri, email: String, result: List<String>, name: String) {
+        _isLoading.value = true
+        val imagePath = "history/${name}_${email}"
+        val image = storage.child(imagePath)
+        val data = hashMapOf(
+            "email" to email,
+            "name" to name,
+            "result" to result,
+            "link" to imagePath
+        )
+        val history = db.collection("history").whereEqualTo("link", imagePath).get().await()
+
+        try {
+            if (history.isEmpty) {
+                image.putFile(uri).await()
+                db.collection("history").add(data).await()
+                image.putFile(uri).await()
+                Log.d("Storage", "Image uploaded successfully")
+                _isLoading.value = false
+            } else {
+                println("file already exists")
+                _isLoading.value = false
+            }
+        } catch (e: Exception) {
+            Log.d("Storage", "Image upload failed: ${e.message}")
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun getHistory(email: String) {
+        _isLoading.value = true
+        try {
+            val history = db.collection("history").whereEqualTo("email", email).get().await()
+
+            if (history.isEmpty) {
+                println("No data found")
+                _historyData.value = emptyList()
+            } else {
+                val data = history.documents.mapNotNull { document ->
+                    document.toObject(historyModel::class.java)
+                }
+                _historyData.value = data
+            }
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+            _historyData.value = emptyList()
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    fun filteredData(name: String) {
+        _historyDetails.value = _historyData.value.find { it.name == name }
+    }
+
 }

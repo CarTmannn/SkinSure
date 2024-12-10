@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "873663214409",
-    "project_id": "skinsure-b33c5",
-    "storage_bucket": "skinsure-b33c5.firebasestorage.app"
+    "project_number": "494904058561",
+    "project_id": "skinsure-414dd",
+    "storage_bucket": "skinsure-414dd.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:873663214409:android:7e293bf7f8c75a983ce098",
+        "mobilesdk_app_id": "1:494904058561:android:3f983b5a907abbf8586a40",
         "android_client_info": {
           "package_name": "com.example.skinsure"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDCQ0F7MNYWyRvr8xeynEo7MeAiJzRdhlA"
+          "current_key": "AIzaSyBzuW9sX1q9glC3C5VzBgUgNpOQcEAZzbY"
         }
       ],
       "services": {

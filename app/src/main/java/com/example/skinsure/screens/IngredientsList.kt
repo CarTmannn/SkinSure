@@ -1,5 +1,6 @@
 package com.example.skinsure.screens
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -34,6 +36,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +45,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,10 +55,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.skinsure.viewModel.IngredientViewModel
 import com.example.skinsure.viewModel.IngredientsDetailViewModel
+import com.example.skinsure.viewModel.LogInViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IngredientList(navController: NavHostController, ingredientViewModel: IngredientViewModel = viewModel(), ingredientsDetailViewModel: IngredientsDetailViewModel = viewModel()){
+fun IngredientList(navController: NavHostController, ingredientViewModel: IngredientViewModel = viewModel(), ingredientsDetailViewModel: IngredientsDetailViewModel = viewModel(), logInViewModel: LogInViewModel = viewModel()){
         val data by ingredientViewModel.ingredientDetails.collectAsState()
         var productName by remember {
                 mutableStateOf("")
@@ -63,6 +69,10 @@ fun IngredientList(navController: NavHostController, ingredientViewModel: Ingred
                 mutableStateOf(false)
         }
         val image by ingredientViewModel.imageBitmap.collectAsState()
+        val coroutine = rememberCoroutineScope()
+        val context = LocalContext.current
+        val loading by ingredientViewModel.isLoading.collectAsState()
+        val ingredientNames = data.map { it.IngredientName }
 
         BackHandler {
                 ingredientViewModel.setIngredientDetailsBackToEmpty()
@@ -178,14 +188,32 @@ fun IngredientList(navController: NavHostController, ingredientViewModel: Ingred
                                                                                 20.dp
                                                                         )
                                                                 )
-                                                                .clickable { }
+                                                                .clickable {
+                                                                        coroutine.launch {
+                                                                                ingredientViewModel.saveResult(
+                                                                                        uri = ingredientViewModel.saveBitmapToFile(
+                                                                                                context = context,
+                                                                                                bitmap = image!!
+                                                                                        )!!,
+                                                                                        email = logInViewModel.fetchData.value.email,
+                                                                                        name = productName,
+                                                                                        result = ingredientNames
+                                                                                )
+                                                                        }
+
+                                                                }
                                                                 .background(
                                                                         color = Color.White,
                                                                         shape = RoundedCornerShape(
                                                                                 20.dp
                                                                         )
                                                                 ), contentAlignment = Alignment.Center) {
-                                                        Text(text = "save", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 13.dp, vertical = 8.dp))
+                                                        if(loading){
+                                                                CircularProgressIndicator(strokeWidth = 4.dp, color = Color.Black, modifier = Modifier.size(25.dp))
+                                                        } else {
+                                                                Text(text = "save", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 13.dp, vertical = 8.dp))
+                                                        }
+
                                                 }
                                         }
                                 }
